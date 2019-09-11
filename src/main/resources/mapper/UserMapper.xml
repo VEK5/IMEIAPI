@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace：名称空间 -->
+<mapper namespace="com.xinan.dao.UserMapper">
+
+	<!-- int insert(User record); -->
+	<insert id="insert" parameterType="com.xinan.bean.User"
+		useGeneratedKeys="true" keyProperty="id">
+		insert into imei_user (wechatid,
+		imei, code, message,date)
+		values (#{wechatid,jdbcType=VARCHAR},
+		#{imei,jdbcType=VARCHAR},
+		#{code,jdbcType=VARCHAR},
+		#{message,jdbcType=VARCHAR},
+		#{date}
+		)
+	</insert>
+
+	<!-- 根据微信ID获取所有查询记录 List<Data> findHistoryByWechatID(User user); -->
+	<!-- SELECT d.* FROM imei_data d left join imei_user u ON d.imei = u.imei where u.wechatid=#{wechatid} GROUP BY u.imei -->
+	<select id="findHistoryByWechatID" resultType="com.xinan.bean.Data">
+		SELECT d.*,u.date FROM imei_data d left join imei_user u ON d.imei = u.imei where u.wechatid=#{wechatid} order by u.date DESC
+	</select>
+	
+	<!-- 根据微信ID、IMEI判断用户之前是否查过该信息  -->
+	<select id="findHistoryByWxidImei" resultType="com.xinan.bean.User">
+		SELECT * FROM imei_user where wechatid=#{wechatid} AND imei = #{imei};
+	</select>
+	
+	<!-- 更新历史记录时间 -->
+	<update id="updatedate">
+		UPDATE imei_user set date=#{date} where wechatid=#{wechatid} AND imei = #{imei};
+	</update>
+	
+	<!-- 查询用户当日查询次数 -->
+	<select id="countTimes" resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM imei_user WHERE TO_DAYS(date) = TO_DAYS(NOW()) and wechatid = #{wechatid};
+	</select>
+	
+</mapper>
